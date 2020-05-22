@@ -2,6 +2,7 @@
 #
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://kedro.readthedocs.io/en/stable/04_user_guide/04_data_catalog.html
+
 #
 # We support interacting with a variety of data stores including local file systems, cloud, network and HDFS
 #
@@ -38,8 +39,6 @@
 # The Data Catalog supports being able to reference the same file using two different DataSet implementations
 # (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
 # https://kedro.readthedocs.io/en/stable/04_user_guide/04_data_catalog.html
-
-#
 # This is a data set used by the "Hello World" example pipeline provided with the project
 # template. Please feel free to remove it once you remove the example pipeline.
 
@@ -61,6 +60,10 @@ Battle_Results:
   load_args:
     sep: '|'
 
+Battle_Results_Train:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/Battle_Results_Train.csv
+
 Submission:
   type: pandas.CSVDataSet
   filepath: data/01_raw/Submission.csv
@@ -72,5 +75,3 @@ Weakness_Pokemon:
   filepath: data/01_raw/Weakness_Pokemon.csv
   load_args:
     sep: '|'
-
-

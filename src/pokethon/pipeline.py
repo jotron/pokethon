@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
@@ -19,7 +19,7 @@
 # trademarks of QuantumBlack. The License does not grant you any right or
 # license to the QuantumBlack Trademarks. You may not use the QuantumBlack
 # Trademarks or any confusingly similar mark as a trademark for your product,
-#     or use the QuantumBlack Trademarks in any other manner that might cause
+# or use the QuantumBlack Trademarks in any other manner that might cause
 # confusion in the marketplace, including but not limited to in advertising,
 # on websites, or on software.
 #
@@ -30,9 +30,11 @@
 """
 
 from typing import Dict
+
 from kedro.pipeline import Pipeline
 
-
+from pokethon.pipelines import data_engineering as de
+from pokethon.pipelines import data_science as ds
 
 ###########################################################################
 # Here you can find an example pipeline, made of two modular pipelines.
@@ -40,9 +42,6 @@ from kedro.pipeline import Pipeline
 # Delete this when you start working on your own Kedro project as
 # well as pipelines/data_science AND pipelines/data_engineering
 # -------------------------------------------------------------------------
-
-from pokethon.pipelines import data_engineering as de
-from pokethon.pipelines import data_science as ds
 
 
 def create_pipelines(**kwargs) -> Dict[str, Pipeline]:
@@ -56,7 +55,6 @@ def create_pipelines(**kwargs) -> Dict[str, Pipeline]:
 
     """
 
-
     data_engineering_pipeline = de.create_pipeline()
     data_science_pipeline = ds.create_pipeline()
 
@@ -65,4 +63,3 @@ def create_pipelines(**kwargs) -> Dict[str, Pipeline]:
         "ds": data_science_pipeline,
         "__default__": data_engineering_pipeline + data_science_pipeline,
     }
-

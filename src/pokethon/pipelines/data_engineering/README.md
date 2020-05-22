@@ -1,6 +1,6 @@
 # Data Engineering pipeline
 
-> *Note:* This `README.md` was generated using `Kedro 0.15.9` for illustration purposes. Please modify it according to your pipeline structure and contents.
+> *Note:* This `README.md` was generated using `Kedro 0.16.1` for illustration purposes. Please modify it according to your pipeline structure and contents.
 
 ## Overview
 
