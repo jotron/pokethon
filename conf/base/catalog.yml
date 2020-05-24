@@ -63,6 +63,10 @@ Battle_Results:
 Battle_Results_Train:
   type: pandas.CSVDataSet
   filepath: data/02_intermediate/Battle_Results_Train.csv
+  
+Battle_Results_Test:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/Battle_Results_Test.csv
 
 Submission:
   type: pandas.CSVDataSet
