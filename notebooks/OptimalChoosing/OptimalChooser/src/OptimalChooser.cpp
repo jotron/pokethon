@@ -40,6 +40,15 @@ uint16_t max(uint16_t a, uint16_t b) {
 double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 		int pokemons, int maxCost) {
 
+	double ***optimalChoice = (double***) malloc(enemies * sizeof(double**));
+	for (int i = 0; i < enemies; i++) {
+		optimalChoice[i] = (double**) malloc((pokemons / 10) * sizeof(double*));
+		for (int j = 0; j < pokemons / 10; j++) {
+			optimalChoice[i][j] = (double*) malloc(
+					(maxCost + 1) * sizeof(double));
+		}
+	}
+
 	double ***DP = (double***) malloc(enemies * sizeof(double**));
 	for (int i = 0; i < enemies; i++) {
 		DP[i] = (double**) malloc(pokemons * sizeof(double*));
@@ -54,40 +63,31 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 
 				if (i == 0) { //Pokemon Boss 1
 					if (cost[j] > k) { // Pokemon too expensive
-						DP[i][j][k] = -1;
-					} else if (j == 0 || DP[i][j - 1][k] == -1) { //No viable predecessor
-						DP[i][j][k] = battleResult[i][j];
+						DP[i][j][k] = -2;
 					} else {
-						DP[i][j][k] = max(DP[i][j - 1][k], battleResult[i][j]);
-
+						DP[i][j][k] = battleResult[i][j];
 					}
 
 				} else { // Pokemon Boss 2..6
 
-					if (DP[i - 1][j][k] == -1) { //Not possible at all for previous Boss
-						DP[i][j][k] = -1;
-					} else if (cost[j] > k) { //Pokemon too expensive
+					if (cost[j] > k) { //Pokemon too expensive
 						DP[i][j][k] = -1;
 					} else {
 						int priceBefore = k - cost[j];
-						int pokemonsBefore = j - (j % 10) - 1; // Not allowed to use the same pokemon Name more than once
-						int enemiesBefore = i - 1;
+						double maxHPBefore =
+								optimalChoice[i - 1][j / 10][priceBefore];
 
-						while (pokemonsBefore >= 0 && priceBefore >= 0
-								&& DP[enemiesBefore][pokemonsBefore][priceBefore] == -1) {
-							priceBefore--;
-						}
-
-						if (priceBefore < -1 || pokemonsBefore < 0) {
-							DP[i][j][k] = -1;
+						if (maxHPBefore > -2) {
+							DP[i][j][k] = maxHPBefore + battleResult[i][j];
 						} else {
-							DP[i][j][k] = DP[enemiesBefore][pokemonsBefore][priceBefore]
-									+ battleResult[i][j];
+							DP[i][j][k] = -2;
 						}
 					}
+				}
 
-					if (j != 0) { //Check predecessor
-						DP[i][j][k] = max(DP[i][j - 1][k], DP[i][j][k]);
+				for (int z = 0; z < pokemons / 10; z++) {
+					if (j / 10 != z && optimalChoice[i][z][k] < DP[i][j][k]) {
+						optimalChoice[i][z][k] = DP[i][j][k];
 					}
 				}
 			}
@@ -98,42 +98,50 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 }
 
 /* Backtracking the DP Table */
-void backTrack(double ***DP, double **battleResult, uint16_t *cost, int enemies,
-		int pokemons, int maxCost) {
+void backTrack(double ***DP, double **battleResults, uint16_t *cost,
+		int enemies, int pokemons, int maxCost) {
 
-	int startPokemon = pokemons - 1;
-	int startCost = maxCost;
-	double initialValue;
-
-	int totalCost = 0;
-	for (int i = enemies - 1; i >= 0; i--) {
-
-		initialValue = DP[i][startPokemon][startCost];
-
-
-		while (startPokemon >= 0
-				&& initialValue <= DP[i][startPokemon][startCost]) {
-			startPokemon--;
+	int bestIndex = 0;
+	for (int i = 0; i < pokemons; i++) {
+		if (DP[enemies - 1][i][maxCost] > DP[enemies - 1][bestIndex][maxCost]) {
+			bestIndex = i;
 		}
-		startPokemon++;
-
-		cout << "Pokemon " << setfill(' ') << setw(4) << startPokemon
-				<< " fights against Boss " << i + 1 << " and should win with "
-				<< setfill(' ') << setw(8) << battleResult[i][startPokemon]
-				<< " hp and cost " << cost[startPokemon] << endl;
-
-		initialValue = initialValue - battleResult[i][startPokemon];
-		startCost = startCost - cost[startPokemon];
-
-		totalCost += cost[startPokemon];
-		startPokemon = startPokemon - (startPokemon % 10) - 1;
 	}
 
+	int currentCost = maxCost;
+	int currentIndex = bestIndex;
+	double currentHP = DP[enemies - 1][bestIndex][maxCost];
+
+	int totalCost = 0;
+	for (int i = enemies; i >= 1; i--) {
+
+		for (int j = 0; j < pokemons; j++) {
+			//cout << currentHP << " " << DP[i - 1][j][currentCost] << endl;
+			if (currentHP - DP[i - 1][j][currentCost] < 0.0001) {
+				currentIndex = j;
+				//cout << "Found" << endl;
+				break;
+			}
+		}
+
+		totalCost += cost[currentIndex];
+
+		cout << "Pokemon" << setfill(' ') << setw(5) << currentIndex
+				<< " fights against Boss " << i << " and should win with "
+				<< setfill(' ') << setw(10)
+				<< battleResults[i - 1][currentIndex] << " hp and cost "
+				<< cost[currentIndex] << endl;
+
+		currentCost -= cost[currentIndex];
+		currentHP -= battleResults[i - 1][currentIndex];
+
+	}
 	cout << "Total HP Gained After fight is: "
-			<< DP[enemies - 1][pokemons - 1][maxCost] << " at cost "
-			<< totalCost << endl;
+			<< DP[enemies - 1][bestIndex][maxCost] << " at cost " << totalCost
+			<< endl;
 
 }
+
 /* ceates files/battleResults.csv with pseudo random values*/
 void createBattleResults(int enemyAmount, int pokemonAmount) {
 
@@ -141,7 +149,7 @@ void createBattleResults(int enemyAmount, int pokemonAmount) {
 	ofstream outputFile;
 	outputFile.open(inputFileName);
 
-	// Write random values into the rows
+// Write random values into the rows
 	for (int i = 0; i < pokemonAmount; i++) {
 		for (int j = 0; j < enemyAmount; j++) {
 			double value = (pseudoRandInt() / (double) 0xFFFF);
@@ -159,7 +167,7 @@ void createCost(int pokemonAmount) {
 	ofstream outputFile;
 	outputFile.open(inputFileName);
 
-	// Write random values into the rows
+// Write random values into the rows
 	for (int i = 0; i < pokemonAmount; i++) {
 		outputFile << pseudoRandInt() % 3500 << ";";
 	}
@@ -235,9 +243,10 @@ int main() {
 	int enemyAmount = 6;
 	int pokemonAmount = 1440;
 	int maxCost = 3500;
+
 	cout << "Starting Analysis" << endl; // prints !!!Hello World!!!
 
-	//freopen("out.txt","w",stdout);
+	freopen("out.txt","w",stdout);
 	/* Input */
 	double **battleResults = getBattleResults(enemyAmount, pokemonAmount);
 	uint16_t *cost = getCost(pokemonAmount);

@@ -5,4 +5,4 @@ Pokemon  701 fights against Boss 3 and should win with 0.770869 hp and cost 302
 Pokemon  221 fights against Boss 2 and should win with 0.894989 hp and cost 586
 Pokemon  218 fights against Boss 1 and should win with 0.856775 hp and cost 1406
 Total HP Gained After fight is: 5.29019 at cost 3330
-Elapsed time: 8.20416 seconds
+Elapsed time: 8.23496 seconds

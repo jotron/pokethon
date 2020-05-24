@@ -66,7 +66,8 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 						DP[i][j][k] = -1;
 					} else {
 						int priceBefore = k - cost[j];
-						double maxHPBefore = DP[i -1][optimalChoice[i - 1][priceBefore]][priceBefore];
+						double maxHPBefore =
+								DP[i - 1][optimalChoice[i - 1][priceBefore]][priceBefore];
 
 						if (maxHPBefore > -2) {
 							DP[i][j][k] = maxHPBefore + battleResult[i][j];
@@ -76,7 +77,8 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 					}
 				}
 
-				if (optimalChoice[i][k] == -1 || DP[i][optimalChoice[i][k]][k] < DP[i][j][k]) {
+				if (optimalChoice[i][k] == -1
+						|| DP[i][optimalChoice[i][k]][k] < DP[i][j][k]) {
 					optimalChoice[i][k] = j;
 				}
 
@@ -103,14 +105,8 @@ void backTrack(double ***DP, double **battleResults, uint16_t *cost,
 	int currentIndex = bestIndex;
 	double currentHP = DP[enemies - 1][bestIndex][maxCost];
 
-	int totalCost = cost[bestIndex];
-	cout << currentIndex << " " << cost[currentIndex] << " "
-			<< battleResults[enemies - 1][currentIndex] << endl;
-
-	for (int i = enemies - 1; i >= 1; i--) {
-
-		currentCost -= cost[currentIndex];
-		currentHP -= battleResults[i][currentIndex];
+	int totalCost = 0;
+	for (int i = enemies; i >= 1; i--) {
 
 		for (int j = 0; j < pokemons; j++) {
 			//cout << currentHP << " " << DP[i - 1][j][currentCost] << endl;
@@ -121,9 +117,17 @@ void backTrack(double ***DP, double **battleResults, uint16_t *cost,
 			}
 		}
 
-		cout << currentIndex << " " << cost[currentIndex] << " "
-				<< battleResults[i - 1][currentIndex] << endl;
 		totalCost += cost[currentIndex];
+
+		cout << "Pokemon" << setfill(' ') << setw(5) << currentIndex
+				<< " fights against Boss " << i << " and should win with "
+				<< setfill(' ') << setw(10)
+				<< battleResults[i - 1][currentIndex] << " hp and cost "
+				<< cost[currentIndex] << endl;
+
+		currentCost -= cost[currentIndex];
+		currentHP -= battleResults[i - 1][currentIndex];
+
 
 	}
 	cout << "Total HP Gained After fight is: "
