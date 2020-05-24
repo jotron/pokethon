@@ -37,7 +37,7 @@ uint16_t max(uint16_t a, uint16_t b) {
 }
 
 //DP Algorithm
-double ***getDPTable(double **battleResult, uint16_t *cost, int enemies,
+double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 		int pokemons, int maxCost) {
 
 	double ***DP = (double***) malloc(enemies * sizeof(double**));
@@ -69,17 +69,19 @@ double ***getDPTable(double **battleResult, uint16_t *cost, int enemies,
 					} else if (cost[j] > k) { //Pokemon too expensive
 						DP[i][j][k] = -1;
 					} else {
-						int combinationBefore = k - cost[j];
+						int priceBefore = k - cost[j];
+						int pokemonsBefore = j - (j % 10) - 1; // Not allowed to use the same pokemon Name more than once
+						int enemiesBefore = i - 1;
 
-						while (combinationBefore >= 0
-								&& DP[i - 1][j][combinationBefore] == -1) {
-							combinationBefore--;
+						while (pokemonsBefore >= 0 && priceBefore >= 0
+								&& DP[enemiesBefore][pokemonsBefore][priceBefore] == -1) {
+							priceBefore--;
 						}
 
-						if (combinationBefore == -1) {
+						if (priceBefore < -1 || pokemonsBefore < 0) {
 							DP[i][j][k] = -1;
 						} else {
-							DP[i][j][k] = DP[i - 1][j][combinationBefore]
+							DP[i][j][k] = DP[enemiesBefore][pokemonsBefore][priceBefore]
 									+ battleResult[i][j];
 						}
 					}
@@ -108,6 +110,7 @@ void backTrack(double ***DP, double **battleResult, uint16_t *cost, int enemies,
 
 		initialValue = DP[i][startPokemon][startCost];
 
+		startPokemon = startPokemon - (startPokemon % 10) - 1;
 		while (startPokemon >= 0
 				&& initialValue <= DP[i][startPokemon][startCost]) {
 			startPokemon--;
@@ -246,7 +249,8 @@ int main() {
 	auto start = chrono::high_resolution_clock::now();
 
 	/* DP algorithm */
-	double ***DP = getDPTable(battleResults, cost, enemyAmount, pokemonAmount, maxCost);
+	double ***DP = getDPTable(battleResults, cost, enemyAmount, pokemonAmount,
+			maxCost);
 	backTrack(DP, battleResults, cost, enemyAmount, pokemonAmount, maxCost);
 
 	/* Time */
