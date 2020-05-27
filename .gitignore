@@ -9,7 +9,7 @@ conf/local/**
 conf/**/*credentials*
 
 # ignore everything in the following folders
-data/**
+data/01_raw/**
 logs/**
 
 # except their sub-folders
@@ -19,7 +19,6 @@ logs/**
 # also keep all .gitkeep files
 !.gitkeep
 
-!data/04_model_output**
 
 ##########################
 # Common files
