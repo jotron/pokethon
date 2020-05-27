@@ -19,9 +19,7 @@ logs/**
 # also keep all .gitkeep files
 !.gitkeep
 
-# also keep the example dataset
-!data/07_model_output/**
-
+!data/04_model_output**
 
 ##########################
 # Common files
@@ -129,8 +127,7 @@ target/
 .ipynb_checkpoints
 
 # IPython
-.ipython/profile_default/history.sqlite
-.ipython/profile_default/startup/README
+.ipython/*
 
 # pyenv
 .python-version
