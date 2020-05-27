@@ -14,8 +14,10 @@ jupyter lab
 Generate Submission from raw data:
 
 ```bash
-python src/ensemble_model.py  # Generate Predictions for Pokemon Battles
-g++ team_creation/optimalchooser.cpp -o team_creation/main	
-./team_creation/main -p 'data/04_model_output/ensemble' # Compute Submission Pokemon Team
+# Generate Predictions for Pokemon Battles using the final model
+python src/main.py
+# Compute Submission Pokemon Team
+g++ team_creation/optimalchooser.cpp -o team_creation/main
+./team_creation/main -p 'data/04_model_output/ensemble'
 ```
 
