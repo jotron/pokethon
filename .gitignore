@@ -153,7 +153,7 @@ venv.bak/
 .mypy_cache/
 
 #Eclipse Stuff
-.cproject
-.project
-.settings/
-/Debug
+*.cproject
+*.project
+*.settings/
+**/Debug
