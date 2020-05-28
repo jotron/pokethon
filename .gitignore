@@ -157,3 +157,5 @@ venv.bak/
 *.project
 *.settings/
 **/Debug
+*.metadata/
+

@@ -1,8 +1,0 @@
-Pokemon   60 fights against Boss 6 and should win with   0.988283 hp and cost 395
-Pokemon  280 fights against Boss 5 and should win with   0.997518 hp and cost 542
-Pokemon  231 fights against Boss 4 and should win with   0.992747 hp and cost 390
-Pokemon  162 fights against Boss 3 and should win with   0.994249 hp and cost 652
-Pokemon 1051 fights against Boss 2 and should win with   0.983535 hp and cost 715
-Pokemon  554 fights against Boss 1 and should win with   0.999878 hp and cost 670
-Total HP Gained After fight is: 5.95621 at cost 3364
-Elapsed time: 33.3343 seconds
