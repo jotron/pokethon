@@ -17,7 +17,5 @@ Generate Submission from raw data:
 # Generate Predictions for Pokemon Battles using the final model
 python src/main.py
 # Compute Submission Pokemon Team
-g++ team_creation/optimalchooser.cpp -o team_creation/main
-./team_creation/main -p 'data/04_model_output/ensemble'
-```
-
+make -C team_creation
+./team_creation/create
