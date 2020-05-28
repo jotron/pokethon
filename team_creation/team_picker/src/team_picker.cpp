@@ -15,11 +15,11 @@
 using namespace std;
 
 // My Paths
-string paths[5] = { "" };
+string path = "";
 int pathAmount = 5;
 
 //DP Algorithm
-double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
+double*** getDPTable(double **battleResult, int *cost, int enemies,
 		int pokemons, int maxCost) {
 
 	double ***DP = (double***) malloc(enemies * sizeof(double**));
@@ -70,15 +70,40 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 	return DP;
 }
 
+void createSubmission(int *submissionData, int enemies) {
+
+	string filename = path + "/data/03_model_output/nn_model/Submission.csv";
+	ifstream orig(path + "/data/01_raw/Submission.csv");
+	ofstream output(filename);
+
+	string line;
+	getline(orig, line);
+	output << line;
+
+	for (int i = 0; i < enemies; i++) {
+		getline(orig, line);
+		line.pop_back();
+		line.pop_back();
+		output << (line + to_string(submissionData[i]) + "\n");
+	}
+
+	orig.close();
+	output.close();
+
+	cout << "Submission created in: " << filename << endl;
+}
+
 /* Backtracking the DP Table */
-void backTrack(double ***DP, double **battleResults, uint16_t *cost,
-		int enemies, int pokemons, int maxCost) {
+void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
+		int pokemons, int maxCost) {
 
 	double totalHP = 0;
 
 	int totalCost = 0;
 	int maxIndex = 0;
 	int currentCost = maxCost;
+
+	int submissionData[enemies] = {0};
 
 	for (int i = enemies - 1; i >= 0; i--) {
 
@@ -96,6 +121,8 @@ void backTrack(double ***DP, double **battleResults, uint16_t *cost,
 		totalHP += battleResults[i][maxIndex] - 1;
 		totalCost += cost[maxIndex];
 
+		submissionData[i] = maxIndex;
+
 		currentCost -= cost[maxIndex];
 		cout << "Pokemon" << setfill(' ') << setw(5) << maxIndex
 				<< " fights against Boss " << i << " and should have "
@@ -106,30 +133,9 @@ void backTrack(double ***DP, double **battleResults, uint16_t *cost,
 
 	cout << "Total HP Gained After fight is: " << totalHP << " at cost "
 			<< totalCost << endl;
+	cout << endl;
 
-}
-
-ifstream openInputFile(string inputFileName) {
-
-	ifstream inputFile;
-
-	/* Look at all paths given */
-	int i = pathAmount - 1;
-	do {
-		inputFile.close();
-		inputFile.open(paths[i] + inputFileName);
-		i--;
-
-	} while (!inputFile.is_open() && i >= 0);
-
-	if (i == -1) {
-		cerr << "error: No file found " << inputFileName << "'.\n";
-		exit(-1);
-	}
-
-	cout << "reading " << paths[i] + inputFileName << endl;
-
-	return inputFile;
+	createSubmission((int*) submissionData, enemies);
 }
 
 /* Reads Battle results from "files/battleResults.csv" */
@@ -141,7 +147,8 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 		battleResults[i] = (double*) malloc(pokemonAmount * sizeof(double*));
 	}
 
-	ifstream inputFile = openInputFile("/battleResults.csv");
+	string filename = path + "/data/03_model_output/nn_model/inference.csv";
+	ifstream inputFile(filename);
 
 	string line; //the i'th line contains the battle results of the i'th pokemon
 	string tmp;
@@ -159,25 +166,30 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 	}
 
 	inputFile.close();
+	cout << "Read Battle Results from " << filename << endl;
 
 	return battleResults;
 }
 
 /* Reads Battle results from "cost.csv" */
-uint16_t* getCost(int pokemonAmount) {
+int* getCost(int pokemonAmount) {
 
 	/* Allocate array for storing cost */
-	uint16_t *cost = (uint16_t*) malloc(pokemonAmount * sizeof(uint16_t*));
+	int *cost = (int*) malloc(pokemonAmount * sizeof(int*));
 
-	ifstream inputFile = openInputFile("/cost.csv");
 
+	string filename = path + "/data/01_raw/cost.csv";
+	ifstream inputFile(filename);
+	cout << filename << endl;
 	string line; //line i has i'th pokemon cost
 	for (int i = 0; i < pokemonAmount; i++) {
 		getline(inputFile, line);
-		cost[i] = (uint16_t) stoi(line);
+		cost[i] = stoi(line);
 	}
 
 	inputFile.close();
+
+	cout << "Read Cost from " << filename << endl;
 
 	return cost;
 }
@@ -186,17 +198,8 @@ int main(int argc, char **argv) {
 
 	/* Manage all possible paths of input files */
 	char temp[10000];
-	paths[0] = getcwd(temp, sizeof(temp));
-	paths[1] = paths[0].substr(0, paths[0].find_last_of("/\\"));
-	paths[2] = paths[0] + "/files";
-	paths[3] = paths[1] + "/files";
-
-	if (argc > 1) {
-		paths[5] = argv[1];
-		cout << "Path given " << argv[1] << endl;
-	}
-
-//freopen("out.txt","w",stdout);
+	path = getcwd(temp, sizeof(temp));
+	path = path.substr(0, path.find("/team_creation"));
 
 	/* Set values for reading files and anlyzing data*/
 	int enemyAmount = 6;
@@ -208,8 +211,8 @@ int main(int argc, char **argv) {
 
 	auto start = chrono::high_resolution_clock::now(); //time measurement
 
+	int *cost = getCost(pokemonAmount);
 	double **battleResults = getBattleResults(enemyAmount, pokemonAmount);
-	uint16_t *cost = getCost(pokemonAmount);
 
 	auto finish = chrono::high_resolution_clock::now(); //time measurement
 	chrono::duration<double> elapsed = finish - start; //time measurement
