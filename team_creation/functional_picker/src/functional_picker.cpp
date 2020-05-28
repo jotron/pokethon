@@ -18,7 +18,7 @@ string paths[5] = { "" };
 int pathAmount = 5;
 
 //DP Algorithm
-double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
+double*** getDPTable(double **battleResult, int *cost, int enemies,
 		int pokemons, int maxCost) {
 
 	double ***optimalChoice = (double***) malloc(enemies * sizeof(double**));
@@ -56,7 +56,7 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 					} else {
 						int priceBefore = k - cost[j];
 						double maxHPBefore =
-								optimalChoice[i - 1][0][priceBefore];
+								optimalChoice[i - 1][j / 10][priceBefore];
 
 						if (maxHPBefore >= -1) {
 							DP[i][j][k] = maxHPBefore + battleResult[i][j];
@@ -65,9 +65,10 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 						}
 					}
 				}
+
 				for (int z = 0; z < pokemons / 10; z++) {
 
-					if (z != j % 10 && optimalChoice[i][z][k] < DP[i][j][k]) {
+					if (z != j / 10 && optimalChoice[i][z][k] < DP[i][j][k]) {
 						optimalChoice[i][z][k] = DP[i][j][k];
 					}
 				}
@@ -79,7 +80,7 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 }
 
 /* Backtracking the DP Table */
-void backTrack(double ***DP, double **battleResults, uint16_t *cost,
+void backTrack(double ***DP, double **battleResults, int *cost,
 		int enemies, int pokemons, int maxCost) {
 
 	int bestIndex = 0;
@@ -178,17 +179,17 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 }
 
 /* Reads Battle results from "cost.csv" */
-uint16_t* getCost(int pokemonAmount) {
+int* getCost(int pokemonAmount) {
 
 	/* Allocate array for storing cost */
-	uint16_t *cost = (uint16_t*) malloc(pokemonAmount * sizeof(uint16_t*));
+	int *cost = (int*) malloc(pokemonAmount * sizeof(int));
 
 	ifstream inputFile = openInputFile("/cost.csv");
 
 	string line; //line i has i'th pokemon cost
 	for (int i = 0; i < pokemonAmount; i++) {
 		getline(inputFile, line);
-		cost[i] = (uint16_t) stoi(line);
+		cost[i] = stoi(line);
 	}
 
 	inputFile.close();
@@ -210,6 +211,8 @@ int main(int argc, char **argv) {
 		cout << "Path given " << argv[1] << endl;
 	}
 
+	//freopen("out.txt","w",stdout);
+
 	/* Set values for reading files and anlyzing data*/
 	int enemyAmount = 6;
 	int pokemonAmount = 1440;
@@ -221,7 +224,7 @@ int main(int argc, char **argv) {
 	auto start = chrono::high_resolution_clock::now(); //time measurement
 
 	double **battleResults = getBattleResults(enemyAmount, pokemonAmount);
-	uint16_t *cost = getCost(pokemonAmount);
+	int *cost = getCost(pokemonAmount);
 
 	auto finish = chrono::high_resolution_clock::now(); //time measurement
 	chrono::duration<double> elapsed = finish - start; //time measurement

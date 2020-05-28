@@ -1,0 +1,14 @@
+Obtaining Data 
+reading /home/rahul/Documents/pokethon/team_creation/battleResults.csv
+reading /home/rahul/Documents/pokethon/team_creation/cost.csv
+Time needed for obtaining data: 0.00257593 seconds
+
+Analyzing Data 
+Pokemon  233 fights against Boss 6 and should have   0.998615 hp and cost 858
+Pokemon 1124 fights against Boss 5 and should have  -0.119603 hp and cost 641
+Pokemon  200 fights against Boss 4 and should have         -1 hp and cost 265
+Pokemon   70 fights against Boss 3 and should have         -1 hp and cost 300
+Pokemon 1135 fights against Boss 2 and should have    0.61131 hp and cost 1056
+Pokemon 1431 fights against Boss 1 and should have   0.999535 hp and cost 359
+Total HP Gained After fight is: 0.489857 at cost 3479
+Time needed for analyzing data: 36.939 seconds

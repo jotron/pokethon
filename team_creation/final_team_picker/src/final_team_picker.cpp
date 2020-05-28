@@ -30,26 +30,38 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 		}
 	}
 
+	double ***optimalChoice = (double***) malloc(enemies * sizeof(double**));
 	for (int i = 0; i < enemies; i++) {
-		for (int j = 0; j <= pokemons; j++) {
+		optimalChoice[i] = (double**) malloc((pokemons / 10) * sizeof(double*));
+		for (int j = 0; j < pokemons / 10; j++) {
+			optimalChoice[i][j] = (double*) malloc(
+					(maxCost + 1) * sizeof(double));
+			for (int k = 0; k <= maxCost; k++) {
+				optimalChoice[i][j][k] = -40;
+			}
+		}
+	}
 
+	for (int i = 0; i < enemies; i++) {
+		for (int j = 0; j < pokemons; j++) {
 			for (int k = 0; k <= maxCost; k++) {
 
-				if (j == 0 || k == 0) {
-					DP[i][j][k] = -40;
-				} else if (cost[j - 1] > k) {
+				if (cost[j] > k) {
 					DP[i][j][k] = -40;
 				} else if (i == 0) {
-					DP[i][j][k] = battleResult[i][j - 1];
-				} else if (DP[i][pokemons][k - cost[j - 1]] == -40) {
+					DP[i][j][k] = battleResult[i][j];
+				} else if (optimalChoice[i - 1][j / 10][k - cost[j]] == -40) {
 					DP[i][j][k] = -40;
 				} else {
-					DP[i][j][k] = battleResult[i][j - 1]
-							+ DP[i - 1][pokemons][k - cost[j - 1]];
+					DP[i][j][k] = battleResult[i][j]
+							+ optimalChoice[i - 1][j / 10][k - cost[j]];
 				}
 
-				if (j > 0) {
-					DP[i][j][k] = max(DP[i][j][k], DP[i][j - 1][k]);
+				for (int x = 0; x < pokemons / 10; x++) {
+					if (x != j / 10) {
+						optimalChoice[i][x][k] = max(optimalChoice[i][x][k],
+								DP[i][j][k]);
+					}
 				}
 			}
 		}
@@ -62,32 +74,38 @@ double*** getDPTable(double **battleResult, uint16_t *cost, int enemies,
 void backTrack(double ***DP, double **battleResults, uint16_t *cost,
 		int enemies, int pokemons, int maxCost) {
 
-	int currentCost = maxCost;
+	double totalHP = 0;
+
 	int totalCost = 0;
+	int maxIndex = 0;
+	int currentCost = maxCost;
 
 	for (int i = enemies - 1; i >= 0; i--) {
 
-		for (int j = pokemons - 2; j >= 0; j--) {
-			if (DP[i][pokemons][currentCost] != DP[i][j][currentCost]) {
-
-				currentCost -= cost[j];
-				totalCost += cost[j];
-
-				cout << "Pokemon" << setfill(' ') << setw(5) << j
-								<< " fights against Boss " << i << " and should have "
-								<< setfill(' ') << setw(10)
-								<< battleResults[i][j] - 1 << " hp and cost "
-								<< cost[j] << endl;
-				break;
+		int previousIndex = maxIndex;
+		for (int j = 0; j < pokemons; j++) {
+			if (DP[i][maxIndex][currentCost] <= DP[i][j][currentCost]) {
+				maxIndex = j;
 			}
 		}
 
+		if (previousIndex == maxIndex) {
+			cerr << "Algorithm didn't work" << endl;
+		}
+
+		totalHP += battleResults[i][maxIndex] - 1;
+		totalCost += cost[maxIndex];
+
+		currentCost -= cost[maxIndex];
+		cout << "Pokemon" << setfill(' ') << setw(5) << maxIndex
+				<< " fights against Boss " << i << " and should have "
+				<< setfill(' ') << setw(10) << battleResults[i][maxIndex] - 1
+				<< " hp and cost " << cost[maxIndex] << endl;
+
 	}
 
-
-	cout << "Total HP Gained After fight is: "
-			<< DP[enemies - 1][pokemons][maxCost] - 6 << " at cost " << totalCost
-			<< endl;
+	cout << "Total HP Gained After fight is: " << totalHP << " at cost "
+			<< totalCost << endl;
 
 }
 
@@ -177,6 +195,8 @@ int main(int argc, char **argv) {
 		paths[5] = argv[1];
 		cout << "Path given " << argv[1] << endl;
 	}
+
+//freopen("out.txt","w",stdout);
 
 	/* Set values for reading files and anlyzing data*/
 	int enemyAmount = 6;
