@@ -1,10 +1,10 @@
 # Model Ouputs
 
-| Model            | Test RMSE | Folder Name  |
-| ---------------- | --------- | ------------ |
-| Proof of Concept | 1.05      | random_model |
-| Neural Network   | 0.0759    | nn_model     |
-|                  |           |              |
+| Model                                       | Test RMSE                | Folder Name  |
+| ------------------------------------------- | ------------------------ | ------------ |
+| Proof of Concept                            | 1.05                     | random_model |
+| Neural Network                              | 0.0645                   | nn_model     |
+| Neural Network trained on complete dataset. | 0.0620 (on training set) | final_model  |
 
 In every folder you should find:
 

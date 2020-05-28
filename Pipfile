@@ -10,6 +10,8 @@ scikit-learn = "*"
 tensorflow = "*"
 pydot = "*"
 graphviz = "*"
+pandas = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.6"
