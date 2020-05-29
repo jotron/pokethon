@@ -160,5 +160,5 @@ venv.bak/
 *.metadata/
 
 *.o
-*/team_creation/*
+team_creation/create
 
