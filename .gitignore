@@ -159,3 +159,6 @@ venv.bak/
 **/Debug
 *.metadata/
 
+*.o
+*/team_creation/*
+
