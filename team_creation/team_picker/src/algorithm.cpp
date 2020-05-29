@@ -140,11 +140,11 @@ int *backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 
 		totalHP += battleResults[i][currentPokemon];
 		totalCost += cost[currentPokemon];
-		submissionData[i] = currentPokemon;
+		submissionData[i] = currentPokemon + 1;
 
 		currentCost -= cost[currentPokemon];
 
-		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon
+		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon + 1
 				<< " fights against Boss " << i << " and should have "
 				<< setfill(' ') << setw(10)
 				<< battleResults[i][currentPokemon] << " hp and cost "

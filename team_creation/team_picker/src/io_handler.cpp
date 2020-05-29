@@ -10,8 +10,11 @@ string modelname = "final_model";
 
 void createSubmission(int *submissionData, int enemies) {
 
+
 	string filename = path + "/data/03_model_output/" + modelname
 			+ "/Submission.csv";
+	remove(filename.c_str());
+
 	ifstream orig(path + "/team_creation/input_data/Submission.csv");
 	ofstream output(filename);
 
