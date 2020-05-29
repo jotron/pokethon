@@ -23,6 +23,13 @@ Generate Submission from raw data:
 # Only major difference to the notebook is that it uses the entire data.
 python src/main.py
 # Compute Submission Pokemon Team
+# We assume that you execute these commands in /pokethon
+# Compile the program
 make -C team_creation
+
+#Calculate Submission Pokemon Team for final_model
 ./team_creation/create
+
+#Calculate Submission Pokemon Team for model of your choice in data/03_model_output/custom_model
+./team_creation/create custom_model
 ```

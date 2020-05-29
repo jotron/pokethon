@@ -14,6 +14,6 @@ int* getCost(int pokemonAmount);
 
 void createSubmission(int *submissionData, int enemies);
 
-void setPath();
+void setPath(int argc, char **argv);
 
 #endif /* IO_HANDLER_H_ */

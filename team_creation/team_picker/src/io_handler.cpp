@@ -6,16 +6,11 @@
 using namespace std;
 
 string path = "";
+string modelname = "final_model";
 
-void setPath() {
-	/* Manage all possible paths of input files */
-	char temp[10000];
-	path = getcwd(temp, sizeof(temp));
-	path = path.substr(0, path.find("/team_creation"));
-}
 void createSubmission(int *submissionData, int enemies) {
 
-	string filename = path + "/data/03_model_output/final_model/Submission.csv";
+	string filename = path + path + "/data/03_model_output/" + modelname + "/Submission.csv";
 	ifstream orig(path + "/team_creation/input_data/Submission.csv");
 	ofstream output(filename);
 
@@ -44,9 +39,13 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 		battleResults[i] = (double*) malloc(pokemonAmount * sizeof(double*));
 	}
 
-	string filename = path + "/data/03_model_output/final_model/inference.csv";
+	string filename = path + "/data/03_model_output/" + modelname + "/inference.csv";
 	ifstream inputFile(filename);
 
+	if (!inputFile.is_open()) {
+		cerr << "Model does not exist: " << modelname << endl;
+		exit(-1);
+	}
 	string line; //the i'th line contains the battle results of the i'th pokemon
 	string tmp;
 
@@ -90,3 +89,13 @@ int* getCost(int pokemonAmount) {
 	return cost;
 }
 
+void setPath(int argc, char **argv) {
+	/* Manage all possible paths of input files */
+	char temp[10000];
+	path = getcwd(temp, sizeof(temp));
+	path = path.substr(0, path.find("/team_creation"));
+
+	if (argc > 1) {
+		modelname = argv[1];
+	}
+}

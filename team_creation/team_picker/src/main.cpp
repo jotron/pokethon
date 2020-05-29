@@ -9,7 +9,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
 
-	setPath();
+	setPath(argc, argv);
 
 	/* Set values for reading files and anlyzing data*/
 	int enemyAmount = 6;
