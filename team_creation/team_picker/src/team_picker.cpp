@@ -42,9 +42,40 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 		}
 	}
 
+	double ***usedPokemons = (double***) malloc(enemies * sizeof(double**));
+	for (int i = 0; i < enemies; i++) {
+		usedPokemons[i] = (double**) malloc((pokemons / 10) * sizeof(double*));
+		for (int j = 0; j < pokemons / 10; j++) {
+			usedPokemons[i][j] = (double*) malloc(
+					(maxCost + 1) * sizeof(double));
+			for (int k = 0; k <= maxCost; k++) {
+				usedPokemons[i][j][k] = -1;
+			}
+		}
+	}
+
+	int ignorePokemons[enemies] = { 0 };
+	for (int i = 0; i < enemies; i++) {
+		ignorePokemons[i] = -1;
+	}
+
+	int races[pokemons / 10] = { 0 };
+
 	for (int i = 0; i < enemies; i++) {
 		for (int j = 0; j < pokemons; j++) {
 			for (int k = 0; k <= maxCost; k++) {
+
+				for (int x = 0; x < enemies; x++) {
+					if (ignorePokemons[x] != -1) {
+						races[ignorePokemons[x]] = 0;
+					}
+				}
+
+				for (int x = 0; x < enemies; x++) {
+					ignorePokemons[x] = -1;
+				}
+
+				ignorePokemons[i] = j / 10;
 
 				if (cost[j] > k) {
 					DP[i][j][k] = -40;
@@ -55,12 +86,30 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 				} else {
 					DP[i][j][k] = battleResult[i][j]
 							+ optimalChoice[i - 1][j / 10][k - cost[j]];
+
+					int currentCost = k - cost[j];
+					int currentPokemon = j;
+
+					for (int x = i - 1; x >= 0; x--) {
+						currentPokemon =
+								usedPokemons[x][currentPokemon / 10][currentCost];
+						currentCost = currentCost - cost[currentPokemon];
+						ignorePokemons[x] = currentPokemon / 10;
+					}
+				}
+
+				for (int x = 0; x < enemies; x++) {
+					if (ignorePokemons[x] != -1) {
+						races[ignorePokemons[x]] = 1;
+					}
 				}
 
 				for (int x = 0; x < pokemons / 10; x++) {
-					if (x != j / 10) {
-						optimalChoice[i][x][k] = max(optimalChoice[i][x][k],
-								DP[i][j][k]);
+					if (races[x] == 0) {
+						if (optimalChoice[i][x][k] < DP[i][j][k]) {
+							optimalChoice[i][x][k] = DP[i][j][k];
+							usedPokemons[i][x][k] = j;
+						}
 					}
 				}
 			}
@@ -72,8 +121,8 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 
 void createSubmission(int *submissionData, int enemies) {
 
-	string filename = path + "/data/03_model_output/nn_model/Submission.csv";
-	ifstream orig(path + "/data/01_raw/Submission.csv");
+	string filename = path + "/data/03_model_output/final_model/Submission.csv";
+	ifstream orig(path + "/team_creation/input_data/Submission.csv");
 	ofstream output(filename);
 
 	string line;
@@ -100,34 +149,42 @@ void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 	double totalHP = 0;
 
 	int totalCost = 0;
-	int maxIndex = 0;
+	int currentPokemon = 0;
 	int currentCost = maxCost;
 
-	int submissionData[enemies] = {0};
+	int submissionData[enemies] = { 0 };
+	int races[pokemons / 10] = { 0 };
 
 	for (int i = enemies - 1; i >= 0; i--) {
 
-		int previousIndex = maxIndex;
+		currentPokemon = -1;
 		for (int j = 0; j < pokemons; j++) {
-			if (DP[i][maxIndex][currentCost] <= DP[i][j][currentCost]) {
-				maxIndex = j;
+
+			if (races[j / 10] == 0) { // Not allowed to chose a pokemon of the same race twice
+				if (currentPokemon < 0) { // We haven't set maxIndex yet
+					currentPokemon = j;
+				} else if (DP[i][currentPokemon][currentCost]
+						< DP[i][j][currentCost]) { // There is a pokemon with a better result
+					currentPokemon = j;
+				} else if (DP[i][currentPokemon][currentCost] == DP[i][j][currentCost]
+						&& cost[currentPokemon] > cost[j]) { // There is a pokemon with the same result at a lower cost
+					currentPokemon = j;
+				}
 			}
 		}
 
-		if (previousIndex == maxIndex) {
-			cerr << "Algorithm didn't work" << endl;
-		}
+		races[currentPokemon / 10] = 1; //Mark pokemon that was used
 
-		totalHP += battleResults[i][maxIndex] - 1;
-		totalCost += cost[maxIndex];
+		totalHP += battleResults[i][currentPokemon] - 1;
+		totalCost += cost[currentPokemon];
+		submissionData[i] = currentPokemon;
 
-		submissionData[i] = maxIndex;
+		currentCost -= cost[currentPokemon];
 
-		currentCost -= cost[maxIndex];
-		cout << "Pokemon" << setfill(' ') << setw(5) << maxIndex
+		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon
 				<< " fights against Boss " << i << " and should have "
-				<< setfill(' ') << setw(10) << battleResults[i][maxIndex] - 1
-				<< " hp and cost " << cost[maxIndex] << endl;
+				<< setfill(' ') << setw(10) << battleResults[i][currentPokemon] - 1
+				<< " hp and cost " << cost[currentPokemon] << endl;
 
 	}
 
@@ -147,7 +204,7 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 		battleResults[i] = (double*) malloc(pokemonAmount * sizeof(double*));
 	}
 
-	string filename = path + "/data/03_model_output/nn_model/inference.csv";
+	string filename = path + "/data/03_model_output/final_model/inference.csv";
 	ifstream inputFile(filename);
 
 	string line; //the i'th line contains the battle results of the i'th pokemon
@@ -177,8 +234,7 @@ int* getCost(int pokemonAmount) {
 	/* Allocate array for storing cost */
 	int *cost = (int*) malloc(pokemonAmount * sizeof(int*));
 
-
-	string filename = path + "/data/01_raw/cost.csv";
+	string filename = path + "/team_creation/input_data/cost.csv";
 	ifstream inputFile(filename);
 	cout << filename << endl;
 	string line; //line i has i'th pokemon cost
