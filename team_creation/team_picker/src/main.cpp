@@ -38,7 +38,8 @@ int main(int argc, char **argv) {
 	/* DP algorithm */
 	double ***DP = getDPTable(battleResults, cost, enemyAmount, pokemonAmount,
 			maxCost);
-	backTrack(DP, battleResults, cost, enemyAmount, pokemonAmount, maxCost);
+	int chosenPokemons[enemyAmount] = { 0 };
+	backTrack(DP, battleResults, cost, enemyAmount, pokemonAmount, maxCost, chosenPokemons);
 
 	finish = chrono::high_resolution_clock::now(); //time measurement
 	elapsed = finish - start; //time measurement
@@ -46,5 +47,6 @@ int main(int argc, char **argv) {
 	cout << "Time needed for analyzing data: " << elapsed.count()
 			<< " seconds\n";
 
+	createSubmission(chosenPokemons, enemyAmount);
 	return 0;
 }

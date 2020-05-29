@@ -10,7 +10,8 @@ string modelname = "final_model";
 
 void createSubmission(int *submissionData, int enemies) {
 
-	string filename = path + path + "/data/03_model_output/" + modelname + "/Submission.csv";
+	string filename = path + "/data/03_model_output/" + modelname
+			+ "/Submission.csv";
 	ifstream orig(path + "/team_creation/input_data/Submission.csv");
 	ofstream output(filename);
 
@@ -28,7 +29,9 @@ void createSubmission(int *submissionData, int enemies) {
 	orig.close();
 	output.close();
 
-	cout << "Submission created in: " << filename << endl;
+	cout << "Submission created in: "
+			<< filename.substr(filename.find("/pokethon"), filename.size())
+			<< endl;
 }
 
 double** getBattleResults(int enemyAmount, int pokemonAmount) {
@@ -39,7 +42,8 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 		battleResults[i] = (double*) malloc(pokemonAmount * sizeof(double*));
 	}
 
-	string filename = path + "/data/03_model_output/" + modelname + "/inference.csv";
+	string filename = path + "/data/03_model_output/" + modelname
+			+ "/inference.csv";
 	ifstream inputFile(filename);
 
 	if (!inputFile.is_open()) {
@@ -57,12 +61,14 @@ double** getBattleResults(int enemyAmount, int pokemonAmount) {
 		getline(s, tmp, ','); //Column not necessary
 		for (int j = 0; j < enemyAmount; j++) {
 			getline(s, tmp, ',');
-			battleResults[j][i] = stod(tmp) + 1;
+			battleResults[j][i] = max(stod(tmp), 0.0);
 		}
 	}
 
 	inputFile.close();
-	cout << "Read Battle Results from " << filename << endl;
+	cout << "Read Battle Results from "
+			<< filename.substr(filename.find("/pokethon"), filename.size())
+			<< endl;
 
 	return battleResults;
 }
@@ -84,7 +90,9 @@ int* getCost(int pokemonAmount) {
 
 	inputFile.close();
 
-	cout << "Read Cost from " << filename << endl;
+	cout << "Read Cost from "
+			<< filename.substr(filename.find("/pokethon"), filename.size())
+			<< endl;
 
 	return cost;
 }

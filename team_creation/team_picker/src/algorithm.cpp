@@ -106,8 +106,8 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 }
 
 /* Backtracking the DP Table */
-void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
-		int pokemons, int maxCost) {
+int *backTrack(double ***DP, double **battleResults, int *cost, int enemies,
+		int pokemons, int maxCost, int* submissionData) {
 
 	double totalHP = 0;
 
@@ -115,7 +115,6 @@ void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 	int currentPokemon = 0;
 	int currentCost = maxCost;
 
-	int submissionData[enemies] = { 0 };
 	int races[pokemons / 10] = { 0 };
 
 	for (int i = enemies - 1; i >= 0; i--) {
@@ -139,7 +138,7 @@ void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 
 		races[currentPokemon / 10] = 1; //Mark pokemon that was used
 
-		totalHP += battleResults[i][currentPokemon] - 1;
+		totalHP += battleResults[i][currentPokemon];
 		totalCost += cost[currentPokemon];
 		submissionData[i] = currentPokemon;
 
@@ -148,14 +147,14 @@ void backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon
 				<< " fights against Boss " << i << " and should have "
 				<< setfill(' ') << setw(10)
-				<< battleResults[i][currentPokemon] - 1 << " hp and cost "
+				<< battleResults[i][currentPokemon] << " hp and cost "
 				<< cost[currentPokemon] << endl;
 
 	}
 
-	cout << "Total HP Gained After fight is: " << totalHP << " at cost "
+	cout << "Total HP Remaining after fighting is: " << totalHP << " at cost "
 			<< totalCost << endl;
 	cout << endl;
 
-	createSubmission((int*) submissionData, enemies);
+	return submissionData;
 }
