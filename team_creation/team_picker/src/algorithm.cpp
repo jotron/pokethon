@@ -5,19 +5,32 @@
 
 using namespace std;
 
-double*** getDPTable(double **battleResult, int *cost, int enemies,
+/* DP[i][j][k] = The maximum amount of HP after fighting pokemon champions 0...i
+ *  under the condition that pokemon j fights against pokemon i
+ *  and the sum of the costs of the pokemons who were chosen to fight is maximum k
+ *  If this is not possible at all, we chose DP[i][j][k] = -40*/
+
+/* optimalChoice[i][j][k] = The maximum amount of HP after fighting pokemon champions 0...i
+ * under the condition that no pokemon with name j is used to fight these pokemons
+ * and the sum of the costs of the pokemons who were chosen to fight is maximum k  */
+
+/* usedPokemons[i][j][k] = The pokemon that fights i in optimalChoice[i][j][k] */
+
+double*** getDPTable(double **battleResult, int *cost, int champions,
 		int pokemons, int maxCost) {
 
-	double ***DP = (double***) malloc(enemies * sizeof(double**));
-	for (int i = 0; i < enemies; i++) {
+	/* Allocating to heap, because it is large */
+	double ***DP = (double***) malloc(champions * sizeof(double**));
+	for (int i = 0; i < champions; i++) {
 		DP[i] = (double**) malloc((pokemons + 1) * sizeof(double*));
 		for (int j = 0; j < pokemons + 1; j++) {
 			DP[i][j] = (double*) malloc((maxCost + 1) * sizeof(double));
 		}
 	}
 
-	double ***optimalChoice = (double***) malloc(enemies * sizeof(double**));
-	for (int i = 0; i < enemies; i++) {
+	/* Allocating to heap, because it is large */
+	double ***optimalChoice = (double***) malloc(champions * sizeof(double**));
+	for (int i = 0; i < champions; i++) {
 		optimalChoice[i] = (double**) malloc((pokemons / 10) * sizeof(double*));
 		for (int j = 0; j < pokemons / 10; j++) {
 			optimalChoice[i][j] = (double*) malloc(
@@ -28,8 +41,9 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 		}
 	}
 
-	double ***usedPokemons = (double***) malloc(enemies * sizeof(double**));
-	for (int i = 0; i < enemies; i++) {
+	/* Allocating to heap, because it is large */
+	double ***usedPokemons = (double***) malloc(champions * sizeof(double**));
+	for (int i = 0; i < champions; i++) {
 		usedPokemons[i] = (double**) malloc((pokemons / 10) * sizeof(double*));
 		for (int j = 0; j < pokemons / 10; j++) {
 			usedPokemons[i][j] = (double*) malloc(
@@ -40,62 +54,63 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 		}
 	}
 
-	int ignorePokemons[enemies] = { 0 };
-	for (int i = 0; i < enemies; i++) {
-		ignorePokemons[i] = -1;
+	/* We store the pokemon names that were used to fight in this array */
+	int chosenPokemons[champions] = { 0 };
+	for (int i = 0; i < champions; i++) {
+		chosenPokemons[i] = -1; //We chose no pokemons in the beginning
 	}
 
-	int races[pokemons / 10] = { 0 };
+	/* We store which pokemons names we should ignore in this array
+	 * while updating optimalChoice and usedPokemons */
+	int ignoreNames[pokemons / 10] = { 0 };
 
-	for (int i = 0; i < enemies; i++) {
+	for (int i = 0; i < champions; i++) {
 		for (int j = 0; j < pokemons; j++) {
 			for (int k = 0; k <= maxCost; k++) {
 
-				for (int x = 0; x < enemies; x++) {
-					if (ignorePokemons[x] != -1) {
-						races[ignorePokemons[x]] = 0;
-					}
-				}
+				/* From the definition of the DP table, we always choose the j'th pokemon */
+				chosenPokemons[i] = j / 10;
 
-				for (int x = 0; x < enemies; x++) {
-					ignorePokemons[x] = -1;
-				}
-
-				ignorePokemons[i] = j / 10;
-
-				if (cost[j] > k) {
+				if (cost[j] > k) { //Pokemon is too expensive to be used to fight i at price k
 					DP[i][j][k] = -40;
-				} else if (i == 0) {
+				} else if (i == 0) { //Only one champion, so no previous fights to worry about
 					DP[i][j][k] = battleResult[i][j];
-				} else if (optimalChoice[i - 1][j / 10][k - cost[j]] == -40) {
+				} else if (optimalChoice[i - 1][j / 10][k - cost[j]] == -40) { //Impossible to fight pokemon 0...i at price k
 					DP[i][j][k] = -40;
-				} else {
+				} else { //Multiple champions to fight,
 					DP[i][j][k] = battleResult[i][j]
-							+ optimalChoice[i - 1][j / 10][k - cost[j]];
+							+ optimalChoice[i - 1][j / 10][k - cost[j]]; //chose optimalChoice for current pokemon name
 
+					/* Determine the pokemons that were used to form optimalChoice[i - 1][j / 10][k - cost[j]] */
 					int currentCost = k - cost[j];
 					int currentPokemon = j;
 
+					/* We find out which pokemon was used to fight boss i-1, i-2, .. , 0 by backtracking the usedPokemons */
 					for (int x = i - 1; x >= 0; x--) {
 						currentPokemon =
 								usedPokemons[x][currentPokemon / 10][currentCost];
 						currentCost = currentCost - cost[currentPokemon];
-						ignorePokemons[x] = currentPokemon / 10;
+						chosenPokemons[x] = currentPokemon / 10;
 					}
 				}
 
-				for (int x = 0; x < enemies; x++) {
-					if (ignorePokemons[x] != -1) {
-						races[ignorePokemons[x]] = 1;
+				/* See what pokemons we chose to fight */
+				for (int x = 0; x < champions; x++) {
+					if (chosenPokemons[x] != -1) {
+						ignoreNames[chosenPokemons[x]] = 1;
 					}
 				}
 
+				/* Update optimalChoice of every pokemon name, expect the ones that were used to fight */
 				for (int x = 0; x < pokemons / 10; x++) {
-					if (races[x] == 0) {
+					if (ignoreNames[x] == 0) {
 						if (optimalChoice[i][x][k] < DP[i][j][k]) {
 							optimalChoice[i][x][k] = DP[i][j][k];
 							usedPokemons[i][x][k] = j;
 						}
+					} else {
+						ignoreNames[x] = 0; //We need to reset this array for the next iteration
+						// We don't need to do this for chosenPokemons, because we overwrite every value in every iteration
 					}
 				}
 			}
@@ -106,8 +121,8 @@ double*** getDPTable(double **battleResult, int *cost, int enemies,
 }
 
 /* Backtracking the DP Table */
-int *backTrack(double ***DP, double **battleResults, int *cost, int enemies,
-		int pokemons, int maxCost, int* submissionData) {
+int* backTrack(double ***DP, double **battleResults, int *cost, int champions,
+		int pokemons, int maxCost, int *submissionData) {
 
 	double totalHP = 0;
 
@@ -115,14 +130,14 @@ int *backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 	int currentPokemon = 0;
 	int currentCost = maxCost;
 
-	int races[pokemons / 10] = { 0 };
+	int names[pokemons / 10] = { 0 };
 
-	for (int i = enemies - 1; i >= 0; i--) {
+	for (int i = champions - 1; i >= 0; i--) {
 
 		currentPokemon = -1;
 		for (int j = 0; j < pokemons; j++) {
 
-			if (races[j / 10] == 0) { // Not allowed to chose a pokemon of the same race twice
+			if (names[j / 10] == 0) { // Not allowed to chose a pokemon name twice
 				if (currentPokemon < 0) { // We haven't set maxIndex yet
 					currentPokemon = j;
 				} else if (DP[i][currentPokemon][currentCost]
@@ -136,19 +151,19 @@ int *backTrack(double ***DP, double **battleResults, int *cost, int enemies,
 			}
 		}
 
-		races[currentPokemon / 10] = 1; //Mark pokemon that was used
+		names[currentPokemon / 10] = 1; //Mark pokemon that was used
+		currentCost -= cost[currentPokemon]; //Subtract cost of current Pokemon
 
+		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon + 1
+				<< " fights against Champion " << i + 1 << " and should have "
+				<< setfill(' ') << setw(10) << battleResults[i][currentPokemon]
+				<< " hp and cost " << cost[currentPokemon] << endl;
+
+		/* Not necessary for backtracking, just for output */
 		totalHP += battleResults[i][currentPokemon];
 		totalCost += cost[currentPokemon];
 		submissionData[i] = currentPokemon + 1;
 
-		currentCost -= cost[currentPokemon];
-
-		cout << "Pokemon" << setfill(' ') << setw(5) << currentPokemon + 1
-				<< " fights against Boss " << i << " and should have "
-				<< setfill(' ') << setw(10)
-				<< battleResults[i][currentPokemon] << " hp and cost "
-				<< cost[currentPokemon] << endl;
 
 	}
 

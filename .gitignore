@@ -161,4 +161,4 @@ venv.bak/
 
 *.o
 team_creation/create
-
+*.~lock*

@@ -9,11 +9,12 @@ using namespace std;
 
 int main(int argc, char **argv) {
 
+	/* Set path for file reading */
 	setPath(argc, argv);
 
-	/* Set values for reading files and anlyzing data*/
-	int enemyAmount = 6;
-	int pokemonAmount = 1440;
+	/* Set values for reading files and analyzing data*/
+	int champions = 6;
+	int pokemons = 1440;
 	int maxCost = 3500;
 
 	/* Input */
@@ -21,8 +22,8 @@ int main(int argc, char **argv) {
 
 	auto start = chrono::high_resolution_clock::now(); //time measurement
 
-	int *cost = getCost(pokemonAmount);
-	double **battleResults = getBattleResults(enemyAmount, pokemonAmount);
+	int *cost = getCost(pokemons);
+	double **battleResults = getBattleResults(champions, pokemons);
 
 	auto finish = chrono::high_resolution_clock::now(); //time measurement
 	chrono::duration<double> elapsed = finish - start; //time measurement
@@ -36,10 +37,10 @@ int main(int argc, char **argv) {
 	start = chrono::high_resolution_clock::now(); //time measurement
 
 	/* DP algorithm */
-	double ***DP = getDPTable(battleResults, cost, enemyAmount, pokemonAmount,
+	double ***DP = getDPTable(battleResults, cost, champions, pokemons,
 			maxCost);
-	int chosenPokemons[enemyAmount] = { 0 };
-	backTrack(DP, battleResults, cost, enemyAmount, pokemonAmount, maxCost, chosenPokemons);
+	int *chosenPokemons = (int*) malloc(champions * sizeof(int));
+	backTrack(DP, battleResults, cost, champions, pokemons, maxCost, chosenPokemons);
 
 	finish = chrono::high_resolution_clock::now(); //time measurement
 	elapsed = finish - start; //time measurement
@@ -47,6 +48,6 @@ int main(int argc, char **argv) {
 	cout << "Time needed for analyzing data: " << elapsed.count()
 			<< " seconds\n";
 
-	createSubmission(chosenPokemons, enemyAmount);
+	createSubmission(chosenPokemons, champions);
 	return 0;
 }
